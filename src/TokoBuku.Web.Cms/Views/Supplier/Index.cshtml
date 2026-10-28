@@ -1,0 +1,79 @@
+@model PaginatedList<TokoBuku.Application.Features.Suppliers.SupplierDto>
+@{
+    ViewData["Title"] = "Pemasok (Supplier)";
+}
+
+<div class="container-fluid px-0">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-5">
+                    <form method="get" class="d-flex gap-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="Cari supplier..." value="@ViewBag.Search" />
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Cari</button>
+                    </form>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/Supplier/Create" class="btn btn-sm btn-primary d-flex align-items-center justify-content-md-end gap-1 ms-auto">
+                        <i class="bi bi-plus-lg"></i> Tambah Supplier
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Nama Supplier</th>
+                            <th>Telepon</th>
+                            <th>Email</th>
+                            <th>Alamat</th>
+                            <th>Total Pengadaan</th>
+                            <th class="text-end" style="width: 120px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Count == 0)
+                        {
+                            <tr><td colspan="7" class="text-center py-5 text-muted">Belum ada data supplier.</td></tr>
+                        }
+                        else
+                        {
+                            int no = (Model.PageNumber - 1) * 10 + 1;
+                            foreach (var s in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@(no++)</td>
+                                    <td class="fw-bold">@s.Name</td>
+                                    <td>@s.Phone</td>
+                                    <td>@s.Email</td>
+                                    <td class="text-truncate" style="max-width: 200px;">@s.Address</td>
+                                    <td><span class="badge badge-soft-info">@s.TotalPurchases order</span></td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/Supplier/Edit/@s.Id" class="btn btn-outline-secondary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form asp-action="Delete" asp-route-id="@s.Id" method="post" class="d-inline" onsubmit="return confirm('Hapus supplier ini?');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-outline-danger" title="Hapus">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

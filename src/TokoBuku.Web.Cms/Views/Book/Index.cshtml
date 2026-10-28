@@ -1,0 +1,162 @@
+@model PaginatedList<TokoBuku.Application.Features.Books.DTOs.BookDto>
+@{
+    ViewData["Title"] = "Katalog Buku";
+}
+
+<div class="container-fluid px-0">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-5">
+                    <form method="get" class="d-flex gap-2">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="search" class="form-control bg-light border-start-0" placeholder="Cari judul / penulis..." value="@ViewBag.Search" />
+                        </div>
+                        <select name="categoryId" class="form-select form-select-sm" style="max-width: 170px;" onchange="this.form.submit()">
+                            <option value="">Semua Kategori</option>
+                            @foreach (SelectListItem item in ViewBag.Categories)
+                            {
+                                <option value="@item.Value" selected="@item.Selected">@item.Text</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    </form>
+                </div>
+
+                <div class="col-md-5 text-md-end d-flex justify-content-md-end gap-2">
+                    <a href="/Book/ExportExcel" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+                        <i class="bi bi-file-earmark-excel"></i> Export Excel
+                    </a>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/Book/Create" class="btn btn-sm btn-primary d-flex align-items-center gap-1">
+                            <i class="bi bi-plus-lg"></i> Tambah Buku
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Judul Buku</th>
+                            <th>Kategori</th>
+                            <th>Tahun</th>
+                            <th>Harga Satuan</th>
+                            <th>Diskon</th>
+                            <th>Stok</th>
+                            <th class="text-end" style="width: 140px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox display-6 d-block mb-2 text-muted"></i>
+                                    Tidak ada data buku yang ditemukan.
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            int no = (Model.PageNumber - 1) * 10 + 1;
+                            foreach (var book in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@(no++)</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="rounded border overflow-hidden bg-light d-flex align-items-center justify-content-center text-primary" style="width: 40px; height: 52px; flex-shrink: 0;">
+                                                @if (!string.IsNullOrEmpty(book.CoverImage))
+                                                {
+                                                    var coverSrc = book.CoverImage.StartsWith("/") || book.CoverImage.StartsWith("http") ? book.CoverImage : $"/images/books/{book.CoverImage}";
+                                                    <img src="@coverSrc" alt="@book.Title" class="w-100 h-100 object-fit-cover" />
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-book fs-4"></i>
+                                                }
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">@book.Title</div>
+                                                <small class="text-muted">@book.Author</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="badge badge-soft-primary">@book.CategoryName</span></td>
+                                    <td>@book.ReleaseYear</td>
+                                    <td>
+                                        <div class="fw-semibold">Rp @book.Price.ToString("N0")</div>
+                                        @if (book.DiscountPercentage > 0)
+                                        {
+                                            <small class="text-success fw-bold">Rp @book.DiscountedPrice.ToString("N0")</small>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (book.DiscountPercentage > 0)
+                                        {
+                                            <span class="badge bg-danger">@book.DiscountPercentage.ToString("0")% OFF</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge @(book.Stock > 5 ? "badge-soft-success" : book.Stock > 0 ? "badge-soft-warning" : "badge-soft-danger")">
+                                            @book.Stock unit
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        @if (User.IsInRole("Admin"))
+                                        {
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="/Book/Edit/@book.Id" class="btn btn-outline-secondary" title="Edit">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                                <form asp-action="Delete" asp-route-id="@book.Id" method="post" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus buku ini?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-outline-danger" title="Hapus">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Total @Model.TotalCount buku terdaftar</small>
+                <ul class="pagination pagination-sm m-0">
+                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.PageNumber - 1)&search=@ViewBag.Search&categoryId=@ViewBag.CategoryId">Sebelumnya</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="?page=@p&search=@ViewBag.Search&categoryId=@ViewBag.CategoryId">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.PageNumber + 1)&search=@ViewBag.Search&categoryId=@ViewBag.CategoryId">Berikutnya</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+</div>

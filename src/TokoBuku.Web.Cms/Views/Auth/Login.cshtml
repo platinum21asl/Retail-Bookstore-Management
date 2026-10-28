@@ -1,0 +1,85 @@
+@model TokoBuku.Web.Controllers.LoginViewModel
+@{
+    ViewData["Title"] = "Masuk Sistem";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, #4f46e5, #312e81);">
+                    <div class="d-inline-flex p-3 rounded-circle bg-white text-primary mb-3 shadow-sm">
+                        <i class="bi bi-book-half fs-2 text-indigo" style="color: #4f46e5;"></i>
+                    </div>
+                    <h4 class="fw-bold mb-1">Toko Buku v2</h4>
+                    <p class="small text-white-50 mb-0">Portfolio Edition &bull; ASP.NET Core &amp; Clean Architecture</p>
+                </div>
+
+                <div class="card-body p-4">
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger py-2 small mb-3">@TempData["Error"]</div>
+                    }
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                    <form asp-action="Login" method="post" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label small fw-semibold">Alamat Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                                <input asp-for="Email" class="form-control bg-light border-start-0" placeholder="nama@tokobuku.com" required />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label small fw-semibold">Kata Sandi</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+                                <input asp-for="Password" class="form-control bg-light border-start-0" placeholder="••••••••" required />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RememberMe" class="form-check-input" />
+                            <label asp-for="RememberMe" class="form-check-label small text-muted">Ingat sesi saya</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Masuk Sekarang
+                        </button>
+                    </form>
+
+                    <div class="position-relative my-4">
+                        <hr class="text-muted" />
+                        <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small fw-semibold">DEMO QUICK ACCESS</span>
+                    </div>
+
+                    <!-- One-Click Quick Access for Portfolio Evaluators -->
+                    <div class="d-grid gap-2">
+                        <form asp-action="QuickLogin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="role" value="Admin" />
+                            <button type="submit" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-shield-lock-fill"></i>
+                                <span>Masuk sebagai <strong>Administrator</strong> (Full Access)</span>
+                            </button>
+                        </form>
+                        <form asp-action="QuickLogin" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="role" value="Kasir" />
+                            <button type="submit" class="btn btn-outline-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                                <i class="bi bi-person-badge-fill"></i>
+                                <span>Masuk sebagai <strong>Kasir</strong> (POS &amp; Sales)</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

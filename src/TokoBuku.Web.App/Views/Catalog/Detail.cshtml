@@ -1,0 +1,175 @@
+@model TokoBuku.Web.App.ViewModels.BookDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Book.Title;
+    var coverSrc = string.IsNullOrEmpty(Model.Book.CoverImage)
+        ? null
+        : (Model.Book.CoverImage.StartsWith("/") || Model.Book.CoverImage.StartsWith("http") 
+            ? Model.Book.CoverImage 
+            : $"/images/books/{Model.Book.CoverImage}");
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-teal text-decoration-none" style="color: #0f766e;">Beranda</a></li>
+            <li class="breadcrumb-item"><a href="/Catalog" class="text-teal text-decoration-none" style="color: #0f766e;">Katalog</a></li>
+            <li class="breadcrumb-item"><a href="/Catalog?category=@Model.Book.CategoryName" class="text-teal text-decoration-none" style="color: #0f766e;">@Model.Book.CategoryName</a></li>
+            <li class="breadcrumb-item active text-truncate" style="max-width: 300px;" aria-current="page">@Model.Book.Title</li>
+        </ol>
+    </nav>
+
+    <!-- Main Detail Card -->
+    <div class="bg-white rounded-4 border p-4 p-md-5 mb-5 shadow-sm">
+        <div class="row g-4 g-lg-5">
+            <!-- Left: Cover Image -->
+            <div class="col-md-5 col-lg-4 text-center">
+                <div class="position-relative d-inline-block w-100 rounded-3 overflow-hidden border" style="aspect-ratio: 3/4; background: #f8fafc; max-width: 320px;">
+                    @if (Model.Book.DiscountPercentage > 0)
+                    {
+                        <div class="discount-badge" style="font-size: 0.9rem; padding: 0.35rem 0.8rem;">
+                            Hemat @Model.Book.DiscountPercentage.ToString("0")%
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(coverSrc))
+                    {
+                        <img src="@coverSrc" alt="@Model.Book.Title" class="w-100 h-100 object-fit-cover" />
+                    }
+                    else
+                    {
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted" style="font-size: 6rem;">
+                            <i class="bi bi-book"></i>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Right: Details & Order Box -->
+            <div class="col-md-7 col-lg-8">
+                <span class="badge rounded-pill bg-light text-teal border px-3 py-2 fw-bold text-uppercase mb-2" style="color: #0f766e !important;">
+                    @Model.Book.CategoryName
+                </span>
+                <h2 class="fw-bold mb-2 text-dark">@Model.Book.Title</h2>
+                <p class="text-muted mb-4">
+                    Penulis: <strong class="text-dark">@Model.Book.Author</strong> &bull; Tahun Rilis: <strong class="text-dark">@Model.Book.ReleaseYear</strong>
+                </p>
+
+                <!-- Pricing Box -->
+                <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline gap-3">
+                    <div class="display-6 fw-bold text-teal" style="color: #0f766e;">
+                        @Model.Book.DiscountedPrice.ToString("C0", new System.Globalization.CultureInfo("id-ID"))
+                    </div>
+                    @if (Model.Book.DiscountPercentage > 0)
+                    {
+                        <div class="fs-5 text-muted text-decoration-line-through">
+                            @Model.Book.Price.ToString("C0", new System.Globalization.CultureInfo("id-ID"))
+                        </div>
+                        <span class="badge bg-danger rounded-pill">Hemat @Model.Book.DiscountPercentage.ToString("0")%</span>
+                    }
+                </div>
+
+                <!-- Stock & Status -->
+                <div class="row g-3 mb-4 small">
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-box-seam text-muted fs-5"></i>
+                            <div>
+                                <div class="text-muted">Ketersediaan Stok:</div>
+                                @if (Model.Book.Stock > 0)
+                                {
+                                    <strong class="text-success"><i class="bi bi-check-circle-fill me-1"></i>Tersedia (@Model.Book.Stock eksemplar)</strong>
+                                }
+                                else
+                                {
+                                    <strong class="text-danger"><i class="bi bi-x-circle-fill me-1"></i>Stok Habis</strong>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-shield-check text-muted fs-5"></i>
+                            <div>
+                                <div class="text-muted">Jaminan Kualitas:</div>
+                                <strong class="text-dark">100% Asli & Tersegel</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add to Cart Form -->
+                @if (Model.Book.Stock > 0)
+                {
+                    <form method="post" action="/Cart/AddToCart" class="d-flex flex-wrap align-items-center gap-3 pt-3 border-top">
+                        <input type="hidden" name="bookId" value="@Model.Book.Id" />
+                        <div class="d-flex align-items-center border rounded-pill px-3 py-1 bg-white">
+                            <span class="small text-muted me-2">Qty:</span>
+                            <input type="number" name="quantity" value="1" min="1" max="@Model.Book.Stock" class="form-control form-control-sm border-0 text-center fw-bold" style="width: 60px;" />
+                        </div>
+
+                        <button type="button" class="btn btn-outline-dark btn-lg rounded-pill px-4 btn-add-to-cart" data-book-id="@Model.Book.Id" data-qty="1">
+                            <i class="bi bi-cart-plus me-1"></i> + Keranjang
+                        </button>
+
+                        <button type="submit" class="btn btn-accent btn-lg rounded-pill px-4 text-dark fw-bold">
+                            <i class="bi bi-bag-check me-1"></i> Beli Sekarang
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <div class="alert alert-warning border-0 small m-0">
+                        <i class="bi bi-exclamation-triangle me-1"></i> Maaf, buku ini sedang tidak tersedia di rak toko. Silakan periksa kembali beberapa hari lagi.
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Specifications Tab -->
+        <div class="mt-5 pt-4 border-top">
+            <h5 class="fw-bold mb-3"><i class="bi bi-info-circle text-teal me-2" style="color: #0f766e;"></i>Informasi Detail Buku</h5>
+            <table class="table table-bordered table-sm w-auto small">
+                <tbody>
+                    <tr>
+                        <th class="bg-light" style="width: 180px;">Judul Buku</th>
+                        <td>@Model.Book.Title</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Penulis</th>
+                        <td>@Model.Book.Author</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Tahun Rilis</th>
+                        <td>@Model.Book.ReleaseYear</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Kategori</th>
+                        <td>@Model.Book.CategoryName</td>
+                    </tr>
+                    <tr>
+                        <th class="bg-light">Status Inventaris</th>
+                        <td>@(Model.Book.Stock > 0 ? "Stok Tersedia di Toko Fisik" : "Habis")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Related Books -->
+    @if (Model.RelatedBooks.Count > 0)
+    {
+        <div class="mb-5">
+            <h4 class="fw-bold mb-3"><i class="bi bi-bookmark-heart text-teal me-2" style="color: #0f766e;"></i>Buku Lain dalam Kategori Ini</h4>
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
+                @foreach (var related in Model.RelatedBooks)
+                {
+                    <div class="col">
+                        <partial name="_BookCard" model="related" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>

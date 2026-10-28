@@ -1,0 +1,72 @@
+@model PaginatedList<TokoBuku.Application.Features.Purchases.PurchaseDto>
+@{
+    ViewData["Title"] = "Pengadaan Buku (Procurement)";
+}
+
+<div class="container-fluid px-0">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-6">
+                    <form method="get" class="d-flex align-items-center gap-2">
+                        <select name="supplierId" class="form-select form-select-sm" style="max-width: 220px;" onchange="this.form.submit()">
+                            <option value="">Semua Supplier</option>
+                            @foreach (var s in (List<TokoBuku.Domain.Entities.Supplier>)ViewBag.Suppliers)
+                            {
+                                <option value="@s.Id" selected="@(ViewBag.SupplierId == s.Id)">@s.Name</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    </form>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="/Purchase/Create" class="btn btn-sm btn-primary d-flex align-items-center justify-content-md-end gap-1 ms-auto">
+                        <i class="bi bi-box-arrow-in-down"></i> Buat Order Pengadaan
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>No. PO</th>
+                            <th>Tanggal Masuk</th>
+                            <th>Supplier</th>
+                            <th>Petugas</th>
+                            <th>Jumlah Buku</th>
+                            <th>Total Biaya</th>
+                            <th>Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Count == 0)
+                        {
+                            <tr><td colspan="8" class="text-center py-5 text-muted">Belum ada data pengadaan stok dari supplier.</td></tr>
+                        }
+                        else
+                        {
+                            int no = (Model.PageNumber - 1) * 10 + 1;
+                            foreach (var po in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@(no++)</td>
+                                    <td><span class="badge badge-soft-primary fw-bold">#@po.Id</span></td>
+                                    <td>@po.PurchaseDate.ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td class="fw-bold">@po.SupplierName</td>
+                                    <td>@po.UserId</td>
+                                    <td><span class="badge bg-light text-dark">@po.TotalItems unit</span></td>
+                                    <td class="fw-bold text-dark">Rp @po.TotalAmount.ToString("N0")</td>
+                                    <td class="text-muted small">@(po.Notes ?? "-")</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

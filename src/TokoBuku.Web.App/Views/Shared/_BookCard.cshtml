@@ -1,0 +1,74 @@
+@model TokoBuku.Application.Features.Books.DTOs.BookDto
+
+@{
+    var coverSrc = string.IsNullOrEmpty(Model.CoverImage)
+        ? null
+        : (Model.CoverImage.StartsWith("/") || Model.CoverImage.StartsWith("http") 
+            ? Model.CoverImage 
+            : $"/images/books/{Model.CoverImage}");
+}
+
+<div class="book-card">
+    <div class="book-cover-container">
+        @if (Model.DiscountPercentage > 0)
+        {
+            <div class="discount-badge">
+                -@Model.DiscountPercentage.ToString("0")%
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(coverSrc))
+        {
+            <img src="@coverSrc" alt="@Model.Title" class="book-cover-img" />
+        }
+        else
+        {
+            <div class="book-cover-placeholder">
+                <i class="bi bi-book"></i>
+            </div>
+        }
+
+        <div class="stock-pill @(Model.Stock > 0 ? "text-success" : "text-danger")">
+            @if (Model.Stock > 0)
+            {
+                <span><i class="bi bi-check-circle-fill me-1"></i>Stok: @Model.Stock</span>
+            }
+            else
+            {
+                <span><i class="bi bi-x-circle-fill me-1"></i>Habis</span>
+            }
+        </div>
+    </div>
+
+    <div class="book-info">
+        <div class="book-category">@Model.CategoryName</div>
+        <a href="/Catalog/Detail/@Model.Id" class="text-decoration-none">
+            <h6 class="book-title" title="@Model.Title">@Model.Title</h6>
+        </a>
+        <div class="book-author">oleh <span class="fw-medium text-dark">@Model.Author</span></div>
+
+        <div class="price-container">
+            <div class="final-price">@Model.DiscountedPrice.ToString("C0", new System.Globalization.CultureInfo("id-ID"))</div>
+            @if (Model.DiscountPercentage > 0)
+            {
+                <div class="strike-price">@Model.Price.ToString("C0", new System.Globalization.CultureInfo("id-ID"))</div>
+            }
+        </div>
+
+        <div class="d-grid mt-3">
+            @if (Model.Stock > 0)
+            {
+                <button type="button" class="btn btn-outline-dark btn-sm rounded-pill btn-add-to-cart d-flex align-items-center justify-content-center gap-1" data-book-id="@Model.Id" data-qty="1">
+                    <i class="bi bi-cart-plus"></i>
+                    <span>+ Keranjang</span>
+                </button>
+            }
+            else
+            {
+                <button type="button" class="btn btn-light btn-sm rounded-pill text-muted disabled">
+                    Stok Habis
+                </button>
+            }
+        </div>
+    </div>
+</div>

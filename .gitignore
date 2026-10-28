@@ -1,0 +1,76 @@
+## ===================================================================
+## Portfolio Code-Reading (Preserve Folder Structure, Exclude Logic)
+## ===================================================================
+# Exclude all files inside backend & test projects
+src/TokoBuku.Domain/**
+src/TokoBuku.Application/**
+src/TokoBuku.Infrastructure/**
+tests/**
+
+# Allow directory traversal so folder structures remain recognized by Git
+!src/TokoBuku.Domain/
+!src/TokoBuku.Domain/**/
+!src/TokoBuku.Application/
+!src/TokoBuku.Application/**/
+!src/TokoBuku.Infrastructure/
+!src/TokoBuku.Infrastructure/**/
+!tests/
+!tests/**/
+
+# Track structural placeholders (.gitkeep & README.md)
+!src/TokoBuku.Domain/**/.gitkeep
+!src/TokoBuku.Application/**/.gitkeep
+!src/TokoBuku.Infrastructure/**/.gitkeep
+!tests/**/.gitkeep
+!src/TokoBuku.Domain/**/README.md
+!src/TokoBuku.Application/**/README.md
+!src/TokoBuku.Infrastructure/**/README.md
+!tests/**/README.md
+TECHNICAL_DOCUMENTATION.md
+
+## ===================================================================
+## App Configuration & Database Secrets (Never push live database settings)
+## ===================================================================
+# Completely ignore all active configuration files that contain real database connection strings
+appsettings.json
+appsettings.*.json
+*.Development.json
+*.Production.json
+*.Local.json
+*.local.json
+
+# Whitelist ONLY sanitized template/example files
+!appsettings.example.json
+!appsettings-example.json
+!appsettings-example.Development.json
+
+## ===================================================================
+## .NET / Visual Studio Environment & User Caches
+## ===================================================================
+TokoBuku.slnLaunch.user
+*.user
+*.userosscache
+*.suo
+*.userprefs
+*.sln.docstates
+
+## ===================================================================
+## Build Outputs & Caches
+## ===================================================================
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+*.log
+
+## ===================================================================
+## IDE & OS Caches
+## ===================================================================
+.vs/
+.vscode/
+.idea/
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+$RECYCLE.BIN/
+.DS_Store

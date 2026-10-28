@@ -1,0 +1,103 @@
+@model TokoBuku.Web.App.ViewModels.OrderSuccessViewModel
+
+@{
+    ViewData["Title"] = "Pesanan Berhasil";
+}
+
+<div class="container py-5 text-center" style="max-width: 720px;">
+    <!-- Success Icon & Header -->
+    <div class="mb-4">
+        <div class="rounded-circle bg-success-subtle text-success d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2.5rem;">
+            <i class="bi bi-check2-circle"></i>
+        </div>
+        <h2 class="fw-bold">Pesanan Anda Berhasil Dibuat!</h2>
+        <p class="text-muted">Terima kasih telah berbelanja di TokoBuku Store. Pesanan Anda telah tersimpan di sistem kami.</p>
+    </div>
+
+    <!-- Invoice Card -->
+    <div class="bg-white rounded-4 border p-4 shadow-sm text-start mb-4">
+        <div class="d-flex justify-content-between align-items-center pb-3 border-bottom mb-3">
+            <div>
+                <small class="text-muted d-block">Nomor Faktur / Invoice:</small>
+                <h4 class="fw-bold m-0 text-teal" style="color: #0f766e;">@Model.InvoiceNumber</h4>
+            </div>
+            <button class="btn btn-outline-secondary btn-sm rounded-pill" onclick="navigator.clipboard.writeText('@Model.InvoiceNumber'); Swal.fire({toast:true, position:'top', icon:'success', title:'Nomor invoice disalin!', timer:1500, showConfirmButton:false});">
+                <i class="bi bi-copy me-1"></i> Salin Invoice
+            </button>
+        </div>
+
+        <div class="row g-3 small mb-3">
+            <div class="col-sm-6">
+                <span class="text-muted">Nama Pemesan:</span>
+                <div class="fw-bold">@Model.CustomerName</div>
+            </div>
+            <div class="col-sm-6">
+                <span class="text-muted">Waktu Transaksi:</span>
+                <div class="fw-bold">@Model.TransactionDate.ToString("dd MMMM yyyy HH:mm")</div>
+            </div>
+            <div class="col-sm-6">
+                <span class="text-muted">Metode Pemenuhan:</span>
+                <div class="fw-bold">
+                    @if (Model.FulfillmentMethod == "StorePickUp")
+                    {
+                        <span class="badge bg-success-subtle text-success"><i class="bi bi-shop me-1"></i>Ambil Langsung di Toko</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-primary-subtle text-primary"><i class="bi bi-truck me-1"></i>Kirim ke Alamat</span>
+                    }
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <span class="text-muted">Metode Pembayaran:</span>
+                <div class="fw-bold">@Model.PaymentMethod</div>
+            </div>
+        </div>
+
+        @if (Model.FulfillmentMethod == "StorePickUp")
+        {
+            <div class="alert alert-info border-0 small mb-3">
+                <i class="bi bi-info-circle-fill me-1"></i> <strong>Instruksi Pengambilan:</strong> Silakan datang ke kasir TokoBuku fisik kami dan tunjukkan Nomor Invoice <strong>@Model.InvoiceNumber</strong> untuk mengambil paket buku Anda.
+            </div>
+        }
+        else if (!string.IsNullOrWhiteSpace(Model.ShippingAddress))
+        {
+            <div class="p-3 bg-light rounded-3 small mb-3">
+                <span class="text-muted d-block">Alamat Pengiriman:</span>
+                <div class="fw-semibold">@Model.ShippingAddress</div>
+            </div>
+        }
+
+        <!-- Payment Instructions Box -->
+        <div class="p-3 rounded-3 bg-light border text-center my-3">
+            <small class="text-muted d-block mb-1">Total Tagihan:</small>
+            <h3 class="fw-bold text-teal mb-3" style="color: #0f766e;">@Model.NetAmount.ToString("C0", new System.Globalization.CultureInfo("id-ID"))</h3>
+
+            @if (Model.PaymentMethod == "QRIS")
+            {
+                <div class="d-inline-block p-3 bg-white border rounded-3 mb-2 shadow-sm">
+                    <i class="bi bi-qr-code" style="font-size: 8rem; color: #0f172a;"></i>
+                </div>
+                <div class="small text-muted">Scan QRIS di atas menggunakan aplikasi e-wallet atau mobile banking Anda.</div>
+            }
+            else
+            {
+                <div class="p-2 bg-white rounded border d-inline-block px-4 mb-2">
+                    <span class="text-muted small">Nomor Virtual Account (VA):</span>
+                    <div class="fw-bold fs-5 text-dark letter-spacing-1">88019-@(Model.InvoiceNumber.Replace("J", ""))</div>
+                </div>
+                <div class="small text-muted">Silakan transfer tepat sesuai total nominal ke nomor Virtual Account di atas.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-center gap-3">
+        <a href="/OrderTracking?invoiceNumber=@Model.InvoiceNumber" class="btn btn-bookish rounded-pill px-4">
+            <i class="bi bi-truck me-1"></i> Lacak Status Pesanan
+        </a>
+        <a href="/Catalog" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-book me-1"></i> Belanja Lagi
+        </a>
+    </div>
+</div>

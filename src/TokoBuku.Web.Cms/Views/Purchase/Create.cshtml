@@ -1,0 +1,130 @@
+@{
+    ViewData["Title"] = "Order Pengadaan Stok Baru";
+    var suppliers = (List<TokoBuku.Domain.Entities.Supplier>)ViewBag.Suppliers;
+    var books = (List<TokoBuku.Domain.Entities.Book>)ViewBag.Books;
+}
+
+<div class="container-fluid px-0">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold"><i class="bi bi-box-arrow-in-down text-primary me-2"></i> Formulir Pengadaan Stok (Purchase Order)</h6>
+                    <a href="/Purchase" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="formPurchase">
+                        @Html.AntiForgeryToken()
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Pilih Pemasok (Supplier)</label>
+                                <select name="supplierId" class="form-select" required>
+                                    <option value="">-- Pilih Supplier --</option>
+                                    @foreach (var s in suppliers)
+                                    {
+                                        <option value="@s.Id">@s.Name (@s.Phone)</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold">Catatan Pengadaan</label>
+                                <input type="text" name="notes" class="form-control" placeholder="Contoh: Pengadaan awal bulan / restok berkala" />
+                            </div>
+                        </div>
+
+                        <div class="card bg-light border-0 p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold small text-dark"><i class="bi bi-list-nested me-1"></i> Daftar Item Buku yang Masuk</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addRow()">
+                                    <i class="bi bi-plus-lg me-1"></i> Tambah Baris Buku
+                                </button>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered bg-white align-middle mb-0" id="tableItems">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Buku</th>
+                                            <th style="width: 120px;">Jumlah Masuk</th>
+                                            <th style="width: 170px;">Harga Beli Satuan (Rp)</th>
+                                            <th style="width: 50px;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchaseRows">
+                                        <tr>
+                                            <td>
+                                                <select name="bookId" class="form-select form-select-sm" required>
+                                                    <option value="">-- Pilih Buku --</option>
+                                                    @foreach (var b in books)
+                                                    {
+                                                        <option value="@b.Id">@b.Title (Stok saat ini: @b.Stock)</option>
+                                                    }
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="number" name="quantity" class="form-control form-control-sm text-end" min="1" value="10" required />
+                                            </td>
+                                            <td>
+                                                <input type="number" name="unitCost" class="form-control form-control-sm text-end" min="0" placeholder="0" required />
+                                            </td>
+                                            <td class="text-center">
+                                                <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                            <a href="/Purchase" class="btn btn-light px-4">Batal</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> Simpan &amp; Tambah Stok Otomatis
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const bookOptions = `@foreach (var b in books) { <option value="@b.Id">@b.Title (Stok: @b.Stock)</option> }`;
+
+        function addRow() {
+            const tbody = document.getElementById('purchaseRows');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>
+                    <select name="bookId" class="form-select form-select-sm" required>
+                        <option value="">-- Pilih Buku --</option>
+                        ${bookOptions}
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="quantity" class="form-control form-control-sm text-end" min="1" value="10" required />
+                </td>
+                <td>
+                    <input type="number" name="unitCost" class="form-control form-control-sm text-end" min="0" placeholder="0" required />
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removeRow(this)"><i class="bi bi-trash"></i></button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function removeRow(btn) {
+            const tbody = document.getElementById('purchaseRows');
+            if (tbody.children.length > 1) {
+                btn.closest('tr').remove();
+            } else {
+                Swal.fire({ icon: 'warning', title: 'Perhatian', text: 'Minimal harus ada 1 baris item buku.' });
+            }
+        }
+    </script>
+}

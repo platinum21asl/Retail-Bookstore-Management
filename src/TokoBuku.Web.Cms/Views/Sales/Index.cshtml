@@ -1,0 +1,117 @@
+@model PaginatedList<TokoBuku.Application.Features.Sales.DTOs.SaleDto>
+@{
+    ViewData["Title"] = "Riwayat Penjualan & Laporan";
+}
+
+<div class="container-fluid px-0">
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <div class="row g-2 align-items-center justify-content-between">
+                <div class="col-md-7">
+                    <form method="get" class="d-flex align-items-center gap-2 flex-wrap">
+                        <div class="input-group input-group-sm" style="max-width: 170px;">
+                            <span class="input-group-text bg-light">Dari</span>
+                            <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate" />
+                        </div>
+                        <div class="input-group input-group-sm" style="max-width: 170px;">
+                            <span class="input-group-text bg-light">Sampai</span>
+                            <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate" />
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+                    </form>
+                </div>
+                <div class="col-md-5 text-md-end d-flex justify-content-md-end gap-2">
+                    <a href="/Sales/ExportExcel?startDate=@ViewBag.StartDate&endDate=@ViewBag.EndDate" class="btn btn-sm btn-outline-success d-flex align-items-center gap-1">
+                        <i class="bi bi-file-earmark-excel"></i> Export Excel
+                    </a>
+                    <a href="/Sales/ExportPdf?startDate=@ViewBag.StartDate&endDate=@ViewBag.EndDate" target="_blank" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1">
+                        <i class="bi bi-file-earmark-pdf"></i> Unduh PDF
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>No. Nota</th>
+                            <th>Tanggal &amp; Waktu</th>
+                            <th>Kasir</th>
+                            <th>Pelanggan</th>
+                            <th>Item</th>
+                            <th>Diskon</th>
+                            <th>Total Bayar</th>
+                            <th class="text-end" style="width: 130px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Items.Count == 0)
+                        {
+                            <tr><td colspan="9" class="text-center py-5 text-muted">Belum ada data transaksi penjualan.</td></tr>
+                        }
+                        else
+                        {
+                            int no = (Model.PageNumber - 1) * 10 + 1;
+                            foreach (var sale in Model.Items)
+                            {
+                                <tr>
+                                    <td class="text-muted small">@(no++)</td>
+                                    <td><span class="badge badge-soft-primary fw-bold">#@sale.Id</span></td>
+                                    <td>@sale.TransactionDate.ToString("dd MMM yyyy, HH:mm")</td>
+                                    <td><i class="bi bi-person me-1 text-muted"></i>@sale.UserId</td>
+                                    <td><span class="fw-semibold">@sale.CustomerName</span></td>
+                                    <td><span class="badge bg-light text-dark">@sale.TotalItems buku</span></td>
+                                    <td>
+                                        @if (sale.TotalDiscount > 0)
+                                        {
+                                            <span class="text-danger small">-Rp @sale.TotalDiscount.ToString("N0")</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">-</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold text-primary">Rp @sale.GrandTotal.ToString("N0")</td>
+                                    <td class="text-end">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="/Sales/Detail/@sale.Id" class="btn btn-outline-secondary" title="Detail Invoice">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="/Sales/ReceiptPdf/@sale.Id" target="_blank" class="btn btn-outline-primary" title="Cetak Struk PDF">
+                                                <i class="bi bi-printer"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="card-footer bg-white py-3 d-flex justify-content-between align-items-center">
+                <small class="text-muted">Total @Model.TotalCount transaksi</small>
+                <ul class="pagination pagination-sm m-0">
+                    <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.PageNumber - 1)&startDate=@ViewBag.StartDate&endDate=@ViewBag.EndDate">Sebelumnya</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="?page=@p&startDate=@ViewBag.StartDate&endDate=@ViewBag.EndDate">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                        <a class="page-link" href="?page=@(Model.PageNumber + 1)&startDate=@ViewBag.StartDate&endDate=@ViewBag.EndDate">Berikutnya</a>
+                    </li>
+                </ul>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,94 @@
+@model TokoBuku.Application.Features.Sales.DTOs.SaleDto
+@{
+    ViewData["Title"] = "Detail Invoice #" + Model.Id;
+}
+
+<div class="container-fluid px-0">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="m-0 fw-bold">Invoice Penjualan <span class="text-primary">#@Model.Id</span></h6>
+                        <small class="text-muted">@Model.TransactionDate.ToString("dd MMMM yyyy, HH:mm:ss") UTC</small>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="/Sales" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+                        <a href="/Sales/ReceiptPdf/@Model.Id" target="_blank" class="btn btn-primary btn-sm">
+                            <i class="bi bi-printer me-1"></i> Cetak Struk PDF
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row mb-4">
+                        <div class="col-sm-6">
+                            <span class="text-muted small">Informasi Pelanggan:</span>
+                            <div class="fw-bold fs-6">@Model.CustomerName</div>
+                        </div>
+                        <div class="col-sm-6 text-sm-end">
+                            <span class="text-muted small">Petugas Kasir:</span>
+                            <div class="fw-semibold">@Model.UserId</div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive mb-4">
+                        <table class="table table-bordered align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Item Buku</th>
+                                    <th class="text-end" style="width: 70px;">Qty</th>
+                                    <th class="text-end" style="width: 130px;">Harga Satuan</th>
+                                    <th class="text-end" style="width: 100px;">Diskon</th>
+                                    <th class="text-end" style="width: 140px;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Details)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold">@item.BookTitle</div>
+                                            <small class="text-muted">Kode ID: #@item.BookId</small>
+                                        </td>
+                                        <td class="text-end">@item.Quantity</td>
+                                        <td class="text-end">Rp @item.UnitPrice.ToString("N0")</td>
+                                        <td class="text-end text-danger">
+                                            @(item.DiscountAmount > 0 ? $"-Rp {item.DiscountAmount:N0}" : "-")
+                                        </td>
+                                        <td class="text-end fw-bold">Rp @item.Subtotal.ToString("N0")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot class="bg-light">
+                                <tr>
+                                    <td colspan="4" class="text-end fw-semibold">Subtotal:</td>
+                                    <td class="text-end">Rp @Model.Subtotal.ToString("N0")</td>
+                                </tr>
+                                @if (Model.TotalDiscount > 0)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-end fw-semibold text-danger">Total Diskon:</td>
+                                        <td class="text-end text-danger">-Rp @Model.TotalDiscount.ToString("N0")</td>
+                                    </tr>
+                                }
+                                <tr class="fs-6">
+                                    <td colspan="4" class="text-end fw-bold text-primary">Grand Total:</td>
+                                    <td class="text-end fw-bold text-primary">Rp @Model.GrandTotal.ToString("N0")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end text-muted">Nominal Uang Diterima:</td>
+                                    <td class="text-end">Rp @Model.CashPaid.ToString("N0")</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end text-muted fw-bold">Kembalian:</td>
+                                    <td class="text-end fw-bold text-success">Rp @Model.ChangeReturned.ToString("N0")</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

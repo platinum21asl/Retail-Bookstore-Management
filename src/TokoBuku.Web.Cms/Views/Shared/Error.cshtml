@@ -1,0 +1,149 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Pemeliharaan & Kendala Sistem";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- User Facing Maintenance Card -->
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; overflow: hidden;">
+                <div class="p-4 text-center text-white" style="background: linear-gradient(135deg, #0f172a, #334155);">
+                    <div class="d-inline-flex p-3 rounded-circle bg-white text-danger mb-3 shadow-sm">
+                        <i class="bi bi-shield-exclamation fs-1 text-danger"></i>
+                    </div>
+                    <h3 class="fw-bold mb-1">@Model.Title</h3>
+                    <p class="small text-white-50 mb-0">Incident Management &bull; Enterprise Recovery System</p>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <div class="text-center mb-4">
+                        <p class="text-secondary lead fs-6 mb-3">
+                            @Model.UserMessage
+                        </p>
+                    </div>
+
+                    <!-- Reference Code Box for User to report to SRE/Helpdesk -->
+                    <div class="card bg-light border-0 p-3 mb-4 rounded-3 text-center">
+                        <span class="text-muted small text-uppercase fw-bold letter-spacing-1">Kode Referensi Tiket Pelacakan</span>
+                        <div class="d-flex align-items-center justify-content-center gap-2 mt-1">
+                            <code class="fs-6 fw-bold text-primary text-break" id="lblTraceId">@Model.RequestId</code>
+                            <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill" onclick="copyTraceId()" title="Salin Kode Referensi">
+                                <i class="bi bi-clipboard"></i> Salin
+                            </button>
+                        </div>
+                        <small class="text-muted mt-1"><i class="bi bi-clock me-1"></i> Waktu Kejadian: @Model.Timestamp</small>
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-4">
+                        <a href="/" class="btn btn-primary px-4 py-2 fw-semibold">
+                            <i class="bi bi-house-door me-1"></i> Kembali ke Beranda
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-semibold" onclick="window.history.back()">
+                            <i class="bi bi-arrow-left me-1"></i> Kembali ke Halaman Sebelumnya
+                        </button>
+                    </div>
+
+                    <!-- DEVELOPER / ADMIN DIAGNOSTICS CONSOLE -->
+                    @if (Model.IsDeveloperOrAdmin)
+                    {
+                        <div class="border-top pt-4 mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span class="badge bg-dark px-3 py-2 text-warning d-flex align-items-center gap-1">
+                                    <i class="bi bi-terminal-fill"></i> DEVELOPER DIAGNOSTICS CONSOLE (ADMIN / SRE)
+                                </span>
+                                <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="collapse" data-bs-target="#debugConsole" aria-expanded="true">
+                                    <i class="bi bi-code-slash me-1"></i> Toggle Debug View
+                                </button>
+                            </div>
+
+                            <div class="collapse show" id="debugConsole">
+                                <div class="card bg-dark text-light border-0 p-3 font-monospace small" style="border-radius: 12px;">
+                                    <div class="mb-2">
+                                        <span class="text-secondary">Request Path:</span>
+                                        <span class="text-info fw-bold">@Model.HttpMethod @Model.Path</span>
+                                    </div>
+
+                                    @if (!string.IsNullOrEmpty(Model.ExceptionType))
+                                    {
+                                        <div class="mb-2">
+                                            <span class="text-secondary">Exception Type:</span>
+                                            <span class="text-danger fw-bold">@Model.ExceptionType</span>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.ExceptionMessage))
+                                    {
+                                        <div class="mb-2">
+                                            <span class="text-secondary">Message:</span>
+                                            <span class="text-warning text-break">@Model.ExceptionMessage</span>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.InnerExceptionMessage))
+                                    {
+                                        <div class="mb-2">
+                                            <span class="text-secondary">Inner Exception:</span>
+                                            <span class="text-danger-emphasis text-break">@Model.InnerExceptionMessage</span>
+                                        </div>
+                                    }
+
+                                    @if (!string.IsNullOrEmpty(Model.StackTrace))
+                                    {
+                                        <div class="mt-3">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <span class="text-secondary">Stack Trace:</span>
+                                                <button type="button" class="btn btn-xs btn-outline-secondary text-white py-0 px-2" style="font-size: 0.7rem;" onclick="copyStackTrace()">
+                                                    <i class="bi bi-copy"></i> Salin Trace
+                                                </button>
+                                            </div>
+                                            <pre class="bg-black text-light p-3 rounded text-break mb-0" id="rawStackTrace" style="max-height: 250px; overflow-y: auto; font-size: 0.72rem; white-space: pre-wrap;">@Model.StackTrace</pre>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="text-secondary small mt-2">
+                                            <i class="bi bi-info-circle me-1"></i> Tidak ada unhandled exception lokal yang aktif pada scope request ini. Detail insiden tercatat pada Application Logger dengan ID: @Model.RequestId.
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function copyTraceId() {
+            const traceId = document.getElementById('lblTraceId').innerText.trim();
+            navigator.clipboard.writeText(traceId).then(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Kode Referensi berhasil disalin!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+        }
+
+        function copyStackTrace() {
+            const stackTrace = document.getElementById('rawStackTrace').innerText;
+            navigator.clipboard.writeText(stackTrace).then(() => {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'Stack trace berhasil disalin ke clipboard!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            });
+        }
+    </script>
+}

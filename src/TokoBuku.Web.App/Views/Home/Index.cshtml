@@ -1,0 +1,140 @@
+@model TokoBuku.Web.App.ViewModels.HomeViewModel
+
+@{
+    ViewData["Title"] = "Beranda Toko Buku Online";
+}
+
+<div class="container py-4">
+    <!-- Hero Banner -->
+    <div class="hero-banner mb-5">
+        <div class="row align-items-center position-relative" style="z-index: 2;">
+            <div class="col-lg-7">
+                <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+                    <i class="bi bi-stars me-1"></i> Koleksi Lengkap 2026
+                </span>
+                <h1 class="display-5 fw-extrabold mb-3">Temukan Buku Impian & Kembangkan Diri Anda</h1>
+                <p class="lead opacity-90 mb-4" style="font-size: 1.05rem;">
+                    Ribuan novel sastra, komik populer, buku teknologi, hingga buku pelajaran sekolah. Belanja online praktis, ambil di toko atau kirim langsung ke rumah Anda.
+                </p>
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="/Catalog" class="btn btn-accent btn-lg text-dark fw-bold px-4">
+                        <i class="bi bi-book me-2"></i>Jelajahi Katalog
+                    </a>
+                    <a href="/Catalog?sort=discount_desc" class="btn btn-outline-light btn-lg px-4">
+                        Lihat Promo Diskon <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+                <div class="p-4 rounded-4 bg-white bg-opacity-10 backdrop-blur border border-white border-opacity-20 text-center">
+                    <i class="bi bi-book-half display-1 text-warning mb-2"></i>
+                    <h5 class="fw-bold">Pesan Hari Ini, Baca Sekarang</h5>
+                    <p class="small text-white-50 m-0">Layanan kasir & logistik toko buku terpercaya</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Value Propositions -->
+    <div class="row g-3 mb-5 text-center">
+        <div class="col-md-4">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-teal-subtle text-teal p-3 fs-3" style="background-color: #ccfbf1; color: #0f766e;">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="fw-bold mb-1">100% Buku Asli</h6>
+                    <small class="text-muted">Koleksi resmi langsung dari penerbit terpercaya.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-amber-subtle text-amber p-3 fs-3" style="background-color: #fef3c7; color: #d97706;">
+                    <i class="bi bi-shop"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="fw-bold mb-1">Ambil di Toko (*Pick-up*)</h6>
+                    <small class="text-muted">Pesan online, ambil langsung di kasir toko tanpa antre.</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-3 bg-white rounded-3 border h-100 d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-blue-subtle text-primary p-3 fs-3" style="background-color: #dbeafe; color: #1d4ed8;">
+                    <i class="bi bi-truck"></i>
+                </div>
+                <div class="text-start">
+                    <h6 class="fw-bold mb-1">Kirim ke Alamat</h6>
+                    <small class="text-muted">Pengiriman cepat ke seluruh wilayah dengan nomor resi.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Carousel / Pills -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="fw-bold m-0"><i class="bi bi-tags-fill text-teal me-2" style="color: #0f766e;"></i>Kategori Populer</h4>
+            <a href="/Catalog" class="text-teal text-decoration-none fw-semibold small" style="color: #0f766e;">Lihat Semua <i class="bi bi-chevron-right"></i></a>
+        </div>
+        <div class="d-flex gap-2 overflow-x-auto pb-2">
+            <a href="/Catalog" class="category-pill active">
+                <i class="bi bi-grid-fill"></i> Semua Buku
+            </a>
+            @foreach (var cat in Model.Categories)
+            {
+                <a href="/Catalog?category=@cat" class="category-pill">
+                    <i class="bi bi-bookmark"></i> @cat
+                </a>
+            }
+        </div>
+    </div>
+
+    <!-- Promo Diskon Spesial -->
+    @if (Model.DiscountedBooks.Count > 0)
+    {
+        <div class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold m-0 text-danger"><i class="bi bi-percent me-2"></i>Promo Diskon Spesial</h4>
+                    <small class="text-muted">Potongan harga terbaik untuk judul-judul pilihan</small>
+                </div>
+                <a href="/Catalog?sort=discount_desc" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    Lihat Semua Promo <i class="bi bi-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+                @foreach (var book in Model.DiscountedBooks)
+                {
+                    <div class="col">
+                        <partial name="_BookCard" model="book" />
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Buku Terbaru -->
+    <div class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="fw-bold m-0"><i class="bi bi-sparkles text-teal me-2" style="color: #0f766e;"></i>Koleksi Buku Terbaru</h4>
+                <small class="text-muted">Buku-buku baru terbit yang baru saja masuk rak toko</small>
+            </div>
+            <a href="/Catalog" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                Katalog Lengkap <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var book in Model.LatestBooks)
+            {
+                <div class="col">
+                    <partial name="_BookCard" model="book" />
+                </div>
+            }
+        </div>
+    </div>
+</div>

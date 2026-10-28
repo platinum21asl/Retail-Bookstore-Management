@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Toko Buku POS v2</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+    <!-- Custom Modern Consultant UI CSS -->
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --primary-subtle: #eef2ff;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --sidebar-active: #312e81;
+            --body-bg: #f8fafc;
+            --card-border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--body-bg);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 1000;
+            padding: 1.5rem 1rem;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.75rem 1.5rem;
+            border-bottom: 1px solid #1e293b;
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.15rem;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+
+        .sidebar-menu {
+            margin-top: 1.25rem;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .menu-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #475569;
+            padding: 0.75rem 0.75rem 0.35rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.85rem;
+            color: #94a3b8;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+            background-color: var(--sidebar-hover);
+        }
+
+        .nav-link.active {
+            color: #ffffff;
+            background: linear-gradient(90deg, var(--sidebar-active), #4338ca);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+        }
+
+        .nav-link i {
+            font-size: 1.15rem;
+        }
+
+        .nav-link .badge {
+            margin-left: auto;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .sidebar-user {
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        /* Main Content Layout */
+        .main-wrapper {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-wrapper.expanded {
+            margin-left: 0;
+        }
+
+        /* Responsive Mobile Drawer */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(2px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+            opacity: 1;
+        }
+
+        @@media (max-width: 991.98px) {
+            .sidebar {
+                transform: translateX(-100%);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            .main-wrapper {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Topbar */
+        .topbar {
+            height: 70px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+
+        /* Modern Card Styling */
+        .card {
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 2px 6px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease-in-out;
+            background-color: #ffffff;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-header {
+            background-color: transparent;
+            border-bottom: 1px solid var(--card-border);
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+        }
+
+        /* Stat KPI Cards */
+        .stat-card {
+            padding: 1.25rem;
+            border-radius: 14px;
+        }
+
+        .stat-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+            padding: 0.55rem 1.15rem;
+            border-radius: 9px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+        }
+
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            font-weight: 600;
+            border-radius: 9px;
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Tables */
+        .table > :not(caption) > * > * {
+            padding: 0.85rem 1rem;
+            vertical-align: middle;
+        }
+
+        .table thead th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        /* Badges */
+        .badge {
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 0.4em 0.7em;
+        }
+
+        .badge-soft-primary { background-color: #e0e7ff; color: #4338ca; }
+        .badge-soft-success { background-color: #dcfce7; color: #15803d; }
+        .badge-soft-warning { background-color: #fef9c3; color: #a16207; }
+        .badge-soft-danger  { background-color: #fee2e2; color: #b91c1c; }
+        .badge-soft-info    { background-color: #e0f2fe; color: #0369a1; }
+    </style>
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <!-- Mobile Sidebar Overlay Backdrop -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <a href="/" class="sidebar-brand">
+                <div class="brand-icon">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <div>
+                    <div>TokoBuku <span class="badge bg-indigo text-white ms-1" style="font-size: 0.65rem; background: #6366f1;">v2</span></div>
+                    <small style="font-size: 0.7rem; color: #94a3b8; font-weight: 400;">POS & Management</small>
+                </div>
+            </a>
+
+            <div class="sidebar-menu">
+                <div class="menu-header">Utama</div>
+                <div class="nav-item">
+                    <a href="/" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")">
+                        <i class="bi bi-grid-1x2-fill"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <div class="menu-header">Transaksi POS</div>
+                <div class="nav-item">
+                    <a href="/Pos" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Pos" ? "active" : "")">
+                        <i class="bi bi-cart-check-fill"></i>
+                        <span>Kasir POS</span>
+                        <span class="badge bg-danger rounded-pill">LIVE</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="/Sales" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Sales" ? "active" : "")">
+                        <i class="bi bi-receipt"></i>
+                        <span>Riwayat Penjualan</span>
+                    </a>
+                </div>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <div class="menu-header">Pengadaan (ERP)</div>
+                    <div class="nav-item">
+                        <a href="/Purchase" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Purchase" ? "active" : "")">
+                            <i class="bi bi-box-arrow-in-down"></i>
+                            <span>Pengadaan Buku</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/Supplier" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Supplier" ? "active" : "")">
+                            <i class="bi bi-truck"></i>
+                            <span>Kelola Supplier</span>
+                        </a>
+                    </div>
+
+                    <div class="menu-header">Master Data</div>
+                    <div class="nav-item">
+                        <a href="/Book" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Book" ? "active" : "")">
+                            <i class="bi bi-journal-bookmark-fill"></i>
+                            <span>Katalog Buku</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/Category" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active" : "")">
+                            <i class="bi bi-tag-fill"></i>
+                            <span>Kategori Buku</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/Customer" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Customer" ? "active" : "")">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Pelanggan</span>
+                        </a>
+                    </div>
+                    <div class="nav-item">
+                        <a href="/Supplier" class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Supplier" ? "active" : "")">
+                            <i class="bi bi-truck"></i>
+                            <span>Kelola Supplier</span>
+                        </a>
+                    </div>
+                }
+            </div>
+
+            <div class="sidebar-user">
+                <div class="d-flex align-items-center gap-2 p-2 rounded" style="background-color: #1e293b;">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px; background: #6366f1;">
+                        @(User.Identity.Name?[0].ToString().ToUpper() ?? "U")
+                    </div>
+                    <div class="flex-grow-1 overflow-hidden">
+                        <div class="text-white text-truncate fw-semibold" style="font-size: 0.85rem;">@User.Identity.Name</div>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="badge @(User.IsInRole("Admin") ? "bg-primary" : "bg-success")" style="font-size: 0.65rem;">
+                                @(User.IsInRole("Admin") ? "Administrator" : "Kasir")
+                            </span>
+                        </div>
+                    </div>
+                    <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-sm btn-link text-danger p-0 ms-1" title="Logout">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Wrapper -->
+        <div class="main-wrapper">
+            <!-- Topbar with Toggle Button -->
+            <header class="topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button type="button" id="sidebarToggle" class="btn btn-light btn-sm rounded-circle p-0 d-flex align-items-center justify-content-center text-dark border" style="width: 38px; height: 38px;" title="Buka/Tutup Sidebar">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+                    <h5 class="m-0 fw-bold text-dark">@ViewData["Title"]</h5>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="/Pos" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
+                        <i class="bi bi-cart3"></i>
+                        <span>Buka Terminal Kasir</span>
+                    </a>
+                    <div class="vr my-2"></div>
+                    <div class="dropdown">
+                        <button class="btn btn-light btn-sm dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> @User.Identity.Name
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                            <li><span class="dropdown-item-text text-muted small">Masuk sebagai @(User.IsInRole("Admin") ? "Admin" : "Kasir")</span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="px-2">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-danger btn-sm w-100">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content Body -->
+            <main class="p-4 flex-grow-1">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm d-flex align-items-center gap-2 mb-4" role="alert">
+                        <i class="bi bi-check-circle-fill fs-5"></i>
+                        <div>@TempData["Success"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm d-flex align-items-center gap-2 mb-4" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+                        <div>@TempData["Error"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+
+            <!-- Clean Modern Footer -->
+            <footer class="p-3 bg-white border-top text-center text-muted small">
+                <div class="container-fluid d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
+                    <div>
+                        &copy; 2026 <strong>Toko Buku POS v2</strong>. All rights reserved.
+                    </div>
+                </div>
+            </footer>
+        </div>
+    }
+    else
+    {
+        <!-- Guest / Login Layout -->
+        <main class="min-vh-100 d-flex align-items-center justify-content-center p-3">
+            @RenderBody()
+        </main>
+    }
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.sidebar');
+            const mainWrapper = document.querySelector('.main-wrapper');
+            const overlay = document.getElementById('sidebarOverlay');
+
+            if (sidebarToggle && sidebar && mainWrapper) {
+                sidebarToggle.addEventListener('click', function () {
+                    if (window.innerWidth < 992) {
+                        sidebar.classList.toggle('mobile-open');
+                        if (overlay) overlay.classList.toggle('show');
+                    } else {
+                        sidebar.classList.toggle('collapsed');
+                        mainWrapper.classList.toggle('expanded');
+                    }
+                });
+
+                if (overlay) {
+                    overlay.addEventListener('click', function () {
+                        sidebar.classList.remove('mobile-open');
+                        overlay.classList.remove('show');
+                    });
+                }
+            }
+        });
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

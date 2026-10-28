@@ -1,0 +1,128 @@
+@model TokoBuku.Web.App.ViewModels.CatalogViewModel
+
+@{
+    ViewData["Title"] = "Katalog Buku Lengkap";
+}
+
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/" class="text-teal text-decoration-none" style="color: #0f766e;">Beranda</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Katalog Buku</li>
+            @if (!string.IsNullOrEmpty(Model.SelectedCategory))
+            {
+                <li class="breadcrumb-item active" aria-current="page">@Model.SelectedCategory</li>
+            }
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Sidebar Filter (Desktop) -->
+        <div class="col-lg-3">
+            <div class="p-4 bg-white rounded-4 border sticky-top" style="top: 90px; z-index: 10;">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                    <h6 class="fw-bold m-0"><i class="bi bi-funnel-fill text-teal me-2" style="color: #0f766e;"></i>Filter Buku</h6>
+                    @if (!string.IsNullOrEmpty(Model.SelectedCategory) || !string.IsNullOrEmpty(Model.Search) || !string.IsNullOrEmpty(Model.Sort))
+                    {
+                        <a href="/Catalog" class="text-danger text-decoration-none small">Reset Filter</a>
+                    }
+                </div>
+
+                <!-- Form Filter -->
+                <form method="get" action="/Catalog">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Kata Kunci</label>
+                        <input type="text" name="search" class="form-control form-control-sm" placeholder="Judul / Penulis..." value="@Model.Search" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Kategori</label>
+                        <select name="category" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="">Semua Kategori</option>
+                            @foreach (var cat in Model.Categories)
+                            {
+                                <option value="@cat" selected="@(Model.SelectedCategory == cat)">@cat</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold text-muted">Urutkan</label>
+                        <select name="sort" class="form-select form-select-sm" onchange="this.form.submit()">
+                            <option value="" selected="@(string.IsNullOrEmpty(Model.Sort))">Terbaru</option>
+                            <option value="discount_desc" selected="@(Model.Sort == "discount_desc")">Diskon Tertinggi</option>
+                            <option value="price_asc" selected="@(Model.Sort == "price_asc")">Harga: Termurah</option>
+                            <option value="price_desc" selected="@(Model.Sort == "price_desc")">Harga: Termahal</option>
+                            <option value="title_asc" selected="@(Model.Sort == "title_asc")">Judul: A - Z</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-bookish btn-sm">Terapkan Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Product Grid -->
+        <div class="col-lg-9">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h4 class="fw-bold m-0">
+                        @(string.IsNullOrEmpty(Model.SelectedCategory) ? "Semua Koleksi Buku" : $"Kategori: {Model.SelectedCategory}")
+                    </h4>
+                    <small class="text-muted">Menampilkan @Model.Books.Items.Count dari total @Model.Books.TotalCount buku</small>
+                </div>
+            </div>
+
+            @if (Model.Books.Items.Count == 0)
+            {
+                <div class="text-center py-5 bg-white rounded-4 border">
+                    <i class="bi bi-journal-x display-1 text-muted mb-3 d-block"></i>
+                    <h5 class="fw-bold">Tidak ada buku yang sesuai</h5>
+                    <p class="text-muted small">Coba ubah kata kunci pencarian atau bersihkan filter kategori Anda.</p>
+                    <a href="/Catalog" class="btn btn-bookish btn-sm">Kembali ke Semua Buku</a>
+                </div>
+            }
+            else
+            {
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4 mb-4">
+                    @foreach (var book in Model.Books.Items)
+                    {
+                        <div class="col">
+                            <partial name="_BookCard" model="book" />
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.Books.TotalPages > 1)
+                {
+                    <nav class="d-flex justify-content-center">
+                        <ul class="pagination">
+                            <li class="page-item @(!Model.Books.HasPreviousPage ? "disabled" : "")">
+                                <a class="page-link" href="/Catalog?category=@Model.SelectedCategory&search=@Model.Search&sort=@Model.Sort&page=@(Model.Books.PageNumber - 1)">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            @for (var i = 1; i <= Model.Books.TotalPages; i++)
+                            {
+                                <li class="page-item @(Model.Books.PageNumber == i ? "active" : "")">
+                                    <a class="page-link" href="/Catalog?category=@Model.SelectedCategory&search=@Model.Search&sort=@Model.Sort&page=@i">@i</a>
+                                </li>
+                            }
+
+                            <li class="page-item @(!Model.Books.HasNextPage ? "disabled" : "")">
+                                <a class="page-link" href="/Catalog?category=@Model.SelectedCategory&search=@Model.Search&sort=@Model.Sort&page=@(Model.Books.PageNumber + 1)">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>

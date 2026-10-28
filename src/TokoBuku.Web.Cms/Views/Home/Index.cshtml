@@ -1,0 +1,200 @@
+@model TokoBuku.Application.Features.Sales.DTOs.DashboardStatsDto
+@{
+    ViewData["Title"] = "Executive Dashboard";
+}
+
+<div class="container-fluid px-0">
+    <!-- Top Action Bar -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <h4 class="fw-bold mb-1">Selamat Datang, @User.Identity?.Name!</h4>
+            <p class="text-muted small mb-0">Ringkasan performa penjualan toko buku dan indikator operasional terkini.</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <form method="get" class="d-flex align-items-center gap-2 m-0">
+                <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+                    @for (int y = DateTime.UtcNow.Year; y >= DateTime.UtcNow.Year - 3; y--)
+                    {
+                        <option value="@y" selected="@(ViewBag.SelectedYear == y)">Tahun @y</option>
+                    }
+                </select>
+            </form>
+            <a href="/Pos" class="btn btn-primary btn-sm d-flex align-items-center gap-1">
+                <i class="bi bi-cart3"></i> Kasir POS
+            </a>
+        </div>
+    </div>
+
+    <!-- 4 KPI Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Omset Hari Ini</span>
+                    <div class="stat-icon bg-indigo-subtle text-primary" style="background-color: #e0e7ff;">
+                        <i class="bi bi-cash-stack"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-1">Rp @Model.TodayRevenue.ToString("N0")</h3>
+                <span class="small text-muted"><i class="bi bi-clock-history me-1"></i> Terhitung real-time hari ini</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Transaksi Hari Ini</span>
+                    <div class="stat-icon bg-success-subtle text-success" style="background-color: #dcfce7;">
+                        <i class="bi bi-receipt-cutoff"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-1">@Model.TodayTransactions</h3>
+                <span class="small text-muted"><i class="bi bi-cart-check me-1"></i> Struk transaksi selesai</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Omset Bulan Ini</span>
+                    <div class="stat-icon bg-info-subtle text-info" style="background-color: #e0f2fe;">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-1">Rp @Model.MonthRevenue.ToString("N0")</h3>
+                <span class="small text-muted"><i class="bi bi-calendar-event me-1"></i> Akumulasi bulan @DateTime.UtcNow.ToString("MMMM")</span>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="card stat-card h-100">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="text-muted small fw-semibold text-uppercase">Stok Kritis</span>
+                    <div class="stat-icon @(Model.LowStockCount > 0 ? "bg-danger-subtle text-danger" : "bg-light text-muted")" style="@(Model.LowStockCount > 0 ? "background-color: #fee2e2;" : "")">
+                        <i class="bi bi-exclamation-octagon"></i>
+                    </div>
+                </div>
+                <h3 class="fw-bold mb-1 @(Model.LowStockCount > 0 ? "text-danger" : "")">@Model.LowStockCount</h3>
+                <span class="small text-muted"><i class="bi bi-box-seam me-1"></i> Buku dengan stok &le; 5 unit</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Analytics Section -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-8">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-bar-chart-line-fill text-primary me-2"></i>
+                        <span>Tren Omset Penjualan Tahun @ViewBag.SelectedYear</span>
+                    </div>
+                    <span class="badge badge-soft-primary">12 Bulan</span>
+                </div>
+                <div class="card-body">
+                    <div style="height: 300px;">
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-trophy-fill text-warning me-2"></i>
+                        <span>Buku Terlaris</span>
+                    </div>
+                    <span class="badge badge-soft-warning">Top 5</span>
+                </div>
+                <div class="card-body p-0">
+                    @if (Model.TopSellingBooks.Count == 0)
+                    {
+                        <div class="p-4 text-center text-muted small">
+                            <i class="bi bi-journal-x fs-2 d-block mb-2"></i>
+                            Belum ada riwayat transaksi penjualan.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="list-group list-group-flush">
+                            @for (int i = 0; i < Model.TopSellingBooks.Count; i++)
+                            {
+                                var item = Model.TopSellingBooks[i];
+                                <div class="list-group-item d-flex align-items-center justify-content-between p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 28px; height: 28px; font-size: 0.8rem; background-color: @(i == 0 ? "#fef08a" : i == 1 ? "#e2e8f0" : "#ffedd5"); color: #1e293b;">
+                                            @(i + 1)
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold text-truncate" style="max-width: 170px;">@item.Title</div>
+                                            <small class="text-muted">Terjual @item.QuantitySold eks</small>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bold small">Rp @item.TotalRevenue.ToString("N0")</div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const monthlyData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MonthlyRevenue));
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                datasets: [{
+                    label: 'Omset (Rp)',
+                    data: monthlyData,
+                    borderColor: '#4f46e5',
+                    backgroundColor: 'rgba(79, 70, 229, 0.08)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: '#4f46e5',
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + Number(context.raw).toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + Number(value / 1000).toLocaleString('id-ID') + 'k';
+                            }
+                        },
+                        grid: { color: '#f1f5f9' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    </script>
+}
